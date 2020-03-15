@@ -197,3 +197,71 @@ impl Scanner {
         self.current >= self.source.len()
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new() {
+        let scanner = Scanner::new(String::from("2 + 2"));
+
+        assert!(scanner.tokens.is_empty());
+        assert_eq!(vec!['2', ' ', '+', ' ', '2'], scanner.source);
+        assert_eq!(0, scanner.start);
+        assert_eq!(0, scanner.current);
+        assert_eq!(1, scanner.line);
+    }
+
+    #[test]
+    fn advance() {
+        let mut scanner = Scanner::new(String::from("2 + 2"));
+        let c = scanner.advance();
+
+        assert_eq!('2', c);
+        assert_eq!(1, scanner.current);
+    }
+
+    #[test]
+    fn push_token_infers_lexeme() {
+        let mut scanner = Scanner::new(String::from("test = true"));
+        scanner.advance();
+        scanner.advance();
+        scanner.advance();
+        scanner.advance();
+        scanner.push_token(TokenKind::Identifier, None);
+
+        assert_eq!(4, scanner.current);
+        assert_eq!(1, scanner.tokens.len());
+        let token = scanner.tokens.first().unwrap();
+
+        assert_eq!("test", token.lexeme); 
+    }
+
+    #[test]
+    fn push_token_uses_lexeme_when_provided() {
+        let mut scanner = Scanner::new(String::from("test = true"));
+        scanner.advance();
+        scanner.advance();
+        scanner.advance();
+        scanner.advance();
+        scanner.push_token(TokenKind::Identifier, Some(String::from("My lexeme")));
+
+        assert_eq!(4, scanner.current);
+        assert_eq!(1, scanner.tokens.len());
+        let token = scanner.tokens.first().unwrap();
+
+        assert_eq!(String::from("My lexeme"), token.lexeme); 
+    }
+
+    #[test]
+    fn at_end() {
+        let mut scanner = Scanner::new(String::from("end"));
+        assert!(!scanner.at_end());
+        scanner.advance();
+        scanner.advance();
+        scanner.advance();
+        assert!(scanner.at_end());
+    }
+}
