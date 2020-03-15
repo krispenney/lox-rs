@@ -203,6 +203,16 @@ impl Scanner {
 mod tests {
     use super::*;
 
+    macro_rules! assert_changes {
+      ($test:expr, from: $from:expr, to: $to:expr, $changes:block) => {
+          assert_eq!($from, $test);
+
+          $changes;
+
+          assert_eq!($to, $test);
+      }
+    }
+
     #[test]
     fn new() {
         let scanner = Scanner::new(String::from("2 + 2"));
@@ -221,6 +231,16 @@ mod tests {
 
         assert_eq!('2', c);
         assert_eq!(1, scanner.current);
+    }
+
+    #[test]
+    fn advance_increments_current() {
+        let mut scanner = Scanner::new(String::from("2 + 2"));
+        assert_changes!(scanner.current, from: 0, to: 3, {
+            scanner.advance();
+            scanner.advance();
+            scanner.advance();
+        });
     }
 
     #[test]
@@ -253,16 +273,6 @@ mod tests {
         let token = scanner.tokens.first().unwrap();
 
         assert_eq!(String::from("My lexeme"), token.lexeme); 
-    }
-
-    macro_rules! assert_changes {
-      ($test:expr, from: $from:expr, to: $to:expr, $changes:block) => {
-          assert_eq!($from, $test);
-
-          $changes;
-
-          assert_eq!($to, $test);
-      }
     }
 
     #[test]
