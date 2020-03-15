@@ -255,13 +255,24 @@ mod tests {
         assert_eq!(String::from("My lexeme"), token.lexeme); 
     }
 
+    macro_rules! assert_changes {
+      ($test:expr, from: $from:expr, to: $to:expr, $changes:block) => {
+          assert_eq!($from, $test);
+
+          $changes;
+
+          assert_eq!($to, $test);
+      }
+    }
+
     #[test]
     fn at_end() {
         let mut scanner = Scanner::new(String::from("end"));
-        assert!(!scanner.at_end());
-        scanner.advance();
-        scanner.advance();
-        scanner.advance();
-        assert!(scanner.at_end());
+
+        assert_changes!(scanner.at_end(), from: false, to: true, {
+            scanner.advance();
+            scanner.advance();
+            scanner.advance();
+        });
     }
 }
