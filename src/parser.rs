@@ -117,10 +117,9 @@ impl Parser {
             Ok(Expression::StringLiteral(self.previous().lexeme))
         } else if self.match_tokens(&vec![TokenKind::LeftParen]) {
             let expr = self.parse_comparison()?;
-            match self.consume(TokenKind::RightParen) {
-                Some(err) => Err(err),
-                None => Ok(Expression::Grouping(Box::new(expr)))
-            }
+            self.consume(TokenKind::RightParen)?;
+
+            Ok(Expression::Grouping(Box::new(expr)))
         } else {
             let token = self.peek();
             Err(LoxErr::new(
@@ -168,20 +167,20 @@ impl Parser {
         self.previous()
     }
 
-    fn consume(&mut self, kind: TokenKind) -> Option<LoxErr> {
+    fn consume(&mut self, kind: TokenKind) -> Result<(), LoxErr> {
         let expected = vec![kind];
         if !self.match_tokens(&expected) {
             let token = self.peek();
-            Some(LoxErr::new(
+            Err(LoxErr::new(
                 token.line,
                 format!(
                     "Unexpected token. expected: {:?}, got: {:?}",
-                    expected.first()?,
+                    expected.first(),
                     token.kind
                 )
             ))
         } else {
-            None
+            Ok(())
         }
     }
 }
